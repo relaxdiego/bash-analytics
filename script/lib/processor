@@ -88,6 +88,7 @@ program_text+='}'
 # Run it!
 #
 
+cat $logfile |
 awk "$program_text" | # Extract the relevant fields
 sort | uniq -c |      # Group by fields and prepend with incidence count
 sort -rn |            # Sort descending
