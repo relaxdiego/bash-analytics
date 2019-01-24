@@ -1,0 +1,24 @@
+#!/bin/bash
+
+get_abspath(){
+    local relpath=$1
+    local abspath
+
+    if [ -f "$relpath" ]; then
+        cd $(dirname "$relpath") && abspath=$(pwd) && cd - > /dev/null
+    fi
+
+    echo "$abspath"
+    return 0
+}
+
+set_x(){
+    if [ "$DEBUG" == "t" ]; then
+        set -x
+    fi
+}
+
+unset_x(){
+    # Quiet down those noisy commands and get off my lawn!
+    { set +x; } 2>/dev/null
+}

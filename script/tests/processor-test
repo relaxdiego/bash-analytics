@@ -1,0 +1,108 @@
+#!/usr/bin/env bash
+
+failures=false
+
+it() {
+    expected=
+
+    while IFS= read -r line; do expected+="$line"$'\n'; done;
+
+    expected=${expected%$'\n'}
+    received=$(/opt/bin/processor /opt/tests/test_log $2)
+
+    if [[ "$received" == "$expected" ]]; then
+        echo -e "\e[32mPASSED:\e[39m it $1"
+        echo "        script/ba $2"
+    else
+        echo -e "\e[31mFAILED:\e[39m it $1"
+        echo "        script/ba $2"
+        echo "============= expected ============="
+        printf '%s\n' "$expected"
+        echo "============= received ============="
+        printf '%s\n' "$received"
+        echo "===================================="
+        diff <(echo "$expected") <(echo "$received")
+        failures=true
+    fi
+
+    echo ""
+}
+
+
+it "lists the top requests grouped by path,code" "-L /opt/tests/test_log -G path,code -T 3" <<EOF
+     41 /twiki/bin/view/Main/WebHome 200
+     32 /twiki/pub/TWiki/TWikiLogos/twikiRobot46x50.gif 304
+     32 /twiki/pub/TWiki/TWikiLogos/twikiRobot46x50.gif 200
+EOF
+
+it "lists the top requests grouped by src,path" "-L /opt/tests/test_log -G src,path -T 3" <<EOF
+     20 10.0.0.153 /icons/mailman.jpg
+     20 10.0.0.153 /icons/gnu-head-tiny.jpg
+     20 10.0.0.153 /icons/PythonPowered.png
+EOF
+
+it "lists the top 5 requests grouped by src,path,code" "-L /opt/tests/test_log -G src,path,code -T 5" <<EOF
+     20 10.0.0.153 /icons/mailman.jpg 304
+     20 10.0.0.153 /icons/gnu-head-tiny.jpg 304
+     20 10.0.0.153 /icons/PythonPowered.png 304
+     13 10.0.0.153 / 304
+     12 10.0.0.153 /cgi-bin/mailgraph2.cgi 200
+EOF
+
+it "works even if the limit option is not provided" "-L /opt/tests/test_log -G src,path,code" <<EOF
+     20 10.0.0.153 /icons/mailman.jpg 304
+     20 10.0.0.153 /icons/gnu-head-tiny.jpg 304
+     20 10.0.0.153 /icons/PythonPowered.png 304
+     13 10.0.0.153 / 304
+     12 10.0.0.153 /cgi-bin/mailgraph2.cgi 200
+     12 10.0.0.153 /cgi-bin/mailgraph.cgi/mailgraph_3_err.png 200
+     12 10.0.0.153 /cgi-bin/mailgraph.cgi/mailgraph_3.png 200
+     12 10.0.0.153 /cgi-bin/mailgraph.cgi/mailgraph_2_err.png 200
+     12 10.0.0.153 /cgi-bin/mailgraph.cgi/mailgraph_2.png 200
+     12 10.0.0.153 /cgi-bin/mailgraph.cgi/mailgraph_1_err.png 200
+EOF
+
+it "filters results based on HTTP code 200 and groups by src,path,code" "-L /opt/tests/test_log -G src,path,code -F code=200" <<EOF
+     12 10.0.0.153 /cgi-bin/mailgraph2.cgi 200
+     12 10.0.0.153 /cgi-bin/mailgraph.cgi/mailgraph_3_err.png 200
+     12 10.0.0.153 /cgi-bin/mailgraph.cgi/mailgraph_3.png 200
+     12 10.0.0.153 /cgi-bin/mailgraph.cgi/mailgraph_2_err.png 200
+     12 10.0.0.153 /cgi-bin/mailgraph.cgi/mailgraph_2.png 200
+     12 10.0.0.153 /cgi-bin/mailgraph.cgi/mailgraph_1_err.png 200
+     12 10.0.0.153 /cgi-bin/mailgraph.cgi/mailgraph_1.png 200
+     12 10.0.0.153 /cgi-bin/mailgraph.cgi/mailgraph_0_err.png 200
+     12 10.0.0.153 /cgi-bin/mailgraph.cgi/mailgraph_0.png 200
+      9 h24-71-236-129.ca.shawcable.net /mailman/admin/ppwc 200
+EOF
+
+it "filters results based on HTTP code 40* and groups by path,code" "-L /opt/tests/test_log -G path,code -F code=40." <<EOF
+      2 /twiki/bin/edit/Main/UvscanAndPostFix?topicparent=Main.WebHome 401
+      2 /twiki/bin/edit/Main/Relayhost?topicparent=Main.ConfigurationVariables 401
+      2 /twiki/bin/edit/Main/PostConf?topicparent=Main.PostfixCommands 401
+      1 /twiki/view/Main/WebHome 404
+      1 /twiki/bin/rename/TWiki/TWikiHistory 401
+      1 /twiki/bin/rename/TWiki/ResetPassword 401
+      1 /twiki/bin/rename/TWiki/DefaultPlugin 401
+      1 /twiki/bin/edit/TWiki/WikiStyleWord?topicparent=TWiki.TextFormattingFAQ 401
+      1 /twiki/bin/edit/TWiki/WikiNotation?t=1078726052 401
+      1 /twiki/bin/edit/TWiki/WebSiteTools?t=1078731408 401
+EOF
+
+it "It lists the top 3 clients between 18:00 and 19:00" "-L /opt/tests/test_log -G src,path,code -F timestamp=07/Mar/2004:1[8-9],code=40." <<EOF
+      1 64.242.88.10 /twiki/bin/edit/TWiki/TWikiVariables?t=1078684115 401
+      1 64.242.88.10 /twiki/bin/edit/Sandbox/TestTopic5?topicparent=Sandbox.WebHome 401
+      1 64.242.88.10 /twiki/bin/edit/Main/Virtual_mailbox_lock?topicparent=Main.ConfigurationVariables 401
+      1 64.242.88.10 /twiki/bin/edit/Main/Trigger_timeout?topicparent=Main.ConfigurationVariables 401
+      1 64.242.88.10 /twiki/bin/edit/Main/TWikiPreferences?topicparent=Main.WebHome 401
+      1 64.242.88.10 /twiki/bin/edit/Main/Syslog_name?topicparent=Main.ConfigurationVariables 401
+      1 64.242.88.10 /twiki/bin/edit/Main/Smtpd_history_flush_threshold?topicparent=Main.ConfigurationVariables 401
+      1 64.242.88.10 /twiki/bin/edit/Main/Sender_canonical_maps?topicparent=Main.ConfigurationVariables 401
+      1 64.242.88.10 /twiki/bin/edit/Main/Qmqpd_authorized_clients?topicparent=Main.ConfigurationVariables 401
+      1 64.242.88.10 /twiki/bin/edit/Main/Mydestination?topicparent=Main.ConfigurationVariables 401
+EOF
+
+if [[ $failures == true ]]; then
+    exit 1
+else
+    exit 0
+fi

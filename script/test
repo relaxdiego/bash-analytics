@@ -1,0 +1,21 @@
+#!/bin/bash
+
+set -e
+
+# Load the common vars and functions used by this script
+export scriptdir_path=$(dirname "${BASH_SOURCE[0]}")
+source $scriptdir_path/lib/vars
+source $scriptdir_path/lib/funcs
+
+make ba-image
+
+# Show the docker command on the terminal for logging/debugging purposes
+set_x
+
+time docker run \
+    -it \
+    --rm \
+    --entrypoint="/opt/tests/processor-test" \
+    "${image_name}"
+
+unset_x

@@ -1,0 +1,18 @@
+#!/bin/bash
+
+export scriptlibdir_relpath=$(dirname "${BASH_SOURCE[0]}")
+
+cd ${scriptlibdir_relpath}/../..
+export projectrootdir_abspath=$(pwd)
+cd - > /dev/null
+
+export scriptdir_abspath=${projectrootdir_abspath}/script
+
+export image_name=bash-analytics
+
+export container_user=root
+export container_workdir_abspath=/opt/bash-analytics
+export container_bindir_abspath=${container_workdir_abspath}/bin
+export container_testdir_abspath=${container_workdir_abspath}/tests
+
+source $scriptdir_abspath/lib/colors

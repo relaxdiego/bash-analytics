@@ -1,0 +1,95 @@
+#!/usr/bin/env bash
+
+# Utility function used multiple times below
+join() { local IFS="$1"; shift; echo "$*"; }
+
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        "-L" | "--logfile")
+            shift
+            logfile=$1
+        ;;
+        "-G" | "--group")
+            shift
+            group_by=$1
+        ;;
+        "-T" | "--top")
+            shift
+            limit=$1
+        ;;
+        "-F" | "--filter")
+            filter=()
+            while [[ "$2" && "${2:0:1}" != '-' ]]; do
+                shift
+                filter+=("$1")
+            done
+        ;;
+        *)
+        ;;
+    esac
+
+    shift
+done
+
+#
+# Defaults
+#
+
+limit=${limit:-10}
+filter="$(join ' ' ${filter[@]})"
+
+#
+# Build the awk program text
+#
+
+declare -A fields_pos=(
+    ["path"]='$7'
+    ["code"]='$9'
+    ["src"]='$1'
+    ["timestamp"]='$4'
+)
+
+# Split the group_by values
+IFS=',' read -ra fields <<< "$group_by"
+
+# Split the filter values
+IFS=',' read -ra filters <<< "$filter"
+
+# Build the awk program for extracting the relevant fields
+
+prints=()
+splits=()
+
+for field in "${fields[@]}"; do
+    prints+=("${fields_pos[$field]}")
+done
+
+conditions=()
+
+for filter in "${filters[@]}"; do
+    IFS='=' read -ra filter_key_val <<< "$filter"
+    filter_col="${fields_pos[${filter_key_val[0]}]}"
+    filter_val=$(sed 's|/|\\/|g' <<< "${filter_key_val[1]}")
+    conditions+=("($filter_col~/$filter_val/)")
+done
+
+program_text='{'
+
+if [ ${#conditions[@]} -gt 0 ]; then
+    program_text+="if ($(sed 's|&| && |g' <<< $(join '&' ${conditions[@]})))"
+fi
+
+program_text+="{print $(join ',' ${prints[@]})}"
+
+program_text+='}'
+
+#
+# Run it!
+#
+
+grep -E "" $logfile |           # Filter if so requested
+awk "$program_text" |                  # Extract the relevant fields
+sort | uniq -c |                       # Group by fields and prepend with incidence count
+sort -rn |                             # Sort descending
+head -n $limit                         # Limit results

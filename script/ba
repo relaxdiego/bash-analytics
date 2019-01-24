@@ -1,0 +1,42 @@
+#!/bin/bash
+
+set -e
+
+# Load the common vars and functions used by this script
+export scriptdir_path=$(dirname "${BASH_SOURCE[0]}")
+source $scriptdir_path/lib/vars
+source $scriptdir_path/lib/funcs
+
+let argnum=1
+
+while [[ $argnum -lt $#+1 ]]; do
+    case ${!argnum} in
+        "-L" | "--logfile")
+            let path=argnum+1
+            logfile=${!path}
+            break
+        ;;
+        *)
+        ;;
+    esac
+    let argnum=$argnum+1
+done
+
+logfile_abspath=$(get_abspath $logfile)
+
+make ba-image
+
+# Show the docker command on the terminal for logging/debugging purposes
+set_x
+
+# The extra "$@" at the end of this command allows users to add extra
+# arguments to script/ba which will then be passed on to the processor.
+docker run \
+    -it \
+    --rm \
+    --mount type=bind,source=${logfile_abspath},target=${logfile_abspath},readonly \
+    --workdir $(dirname "$logfile_abspath") \
+    "${image_name}" \
+    "$@"
+
+unset_x
