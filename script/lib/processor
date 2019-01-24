@@ -88,8 +88,8 @@ program_text+='}'
 # Run it!
 #
 
-grep -E "" $logfile |           # Filter if so requested
-awk "$program_text" |                  # Extract the relevant fields
-sort | uniq -c |                       # Group by fields and prepend with incidence count
-sort -rn |                             # Sort descending
-head -n $limit                         # Limit results
+grep -E "" $logfile | # Filter if so requested
+awk "$program_text" | # Extract the relevant fields
+sort | uniq -c |      # Group by fields and prepend with incidence count
+sort -rn |            # Sort descending
+head -n $limit        # Limit results
