@@ -13,6 +13,12 @@ Requirements
 * Make
 
 
+Installation
+------------
+
+Just clone this repo and you're ready to use the commands below.
+
+
 Usage
 -----
 
