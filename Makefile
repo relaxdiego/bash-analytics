@@ -1,6 +1,7 @@
 .PHONY: ba-image
 
 ba-image: .last-ba-build
+	@:
 
 .last-ba-build: Dockerfile script/lib/processor script/lib/vars/ script/lib/colors script/tests/
 	docker build \
