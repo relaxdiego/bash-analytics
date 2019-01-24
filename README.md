@@ -48,3 +48,5 @@ This project comes with an automated test suite. To run it do the following:
 ```
 script/test
 ```
+
+Check out [relaxdiego.com/](https://relaxdiego.com/) for more info.
