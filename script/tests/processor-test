@@ -88,17 +88,11 @@ it "filters results based on HTTP code 40* and groups by path,code" "-L /opt/tes
       1 /twiki/bin/edit/TWiki/WebSiteTools?t=1078731408 401
 EOF
 
-it "It lists the top 3 clients between 18:00 and 19:00" "-L /opt/tests/test_log -G src,path,code -F timestamp=07/Mar/2004:1[8-9],code=40." <<EOF
-      1 64.242.88.10 /twiki/bin/edit/TWiki/TWikiVariables?t=1078684115 401
-      1 64.242.88.10 /twiki/bin/edit/Sandbox/TestTopic5?topicparent=Sandbox.WebHome 401
-      1 64.242.88.10 /twiki/bin/edit/Main/Virtual_mailbox_lock?topicparent=Main.ConfigurationVariables 401
-      1 64.242.88.10 /twiki/bin/edit/Main/Trigger_timeout?topicparent=Main.ConfigurationVariables 401
-      1 64.242.88.10 /twiki/bin/edit/Main/TWikiPreferences?topicparent=Main.WebHome 401
-      1 64.242.88.10 /twiki/bin/edit/Main/Syslog_name?topicparent=Main.ConfigurationVariables 401
-      1 64.242.88.10 /twiki/bin/edit/Main/Smtpd_history_flush_threshold?topicparent=Main.ConfigurationVariables 401
-      1 64.242.88.10 /twiki/bin/edit/Main/Sender_canonical_maps?topicparent=Main.ConfigurationVariables 401
-      1 64.242.88.10 /twiki/bin/edit/Main/Qmqpd_authorized_clients?topicparent=Main.ConfigurationVariables 401
-      1 64.242.88.10 /twiki/bin/edit/Main/Mydestination?topicparent=Main.ConfigurationVariables 401
+it "It lists the top 3 clients between 18:00 and 19:00" "-L /opt/tests/test_log -G src -F timestamp=07/Mar/2004:1[8-9]" <<EOF
+     45 64.242.88.10
+      3 d207-6-9-183.bchsia.telus.net
+      1 lj1125.inktomisearch.com
+      1 80-219-148-207.dclient.hispeed.ch
 EOF
 
 if [[ $failures == true ]]; then
